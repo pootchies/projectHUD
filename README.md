@@ -1,27 +1,20 @@
 # Automotive HUD — Speed & Tach
 
-A windshield heads-up display for a vehicle. Reads wheel-speed and tachometer
+A second-gen windshield heads-up display for a vehicle. Reads wheel-speed and tachometer
 pulses off the vehicle harness and drives five 7-segment LED displays bright
 enough to reflect off the windshield in daylight.
 
-Custom 4-layer PCB (90 × 30 mm) + STM32 firmware. Prototype / proof-of-concept.
+Custom 4-layer PCB (95 × 35 mm) + STM32 firmware.
 
 ---
 
 ## Features
 
-- 3-digit speed (km/h), 2-digit RPM (displayed in hundreds — `3500 RPM → 35`)
+- 3-digit speed (km/h), 2-digit RPM
 - Optoisolated inputs — no galvanic path to the vehicle harness
-- Hardware input capture for period measurement; adaptive sampling + exponential smoothing
-- Automatic day/night dimming driven by the headlight signal
+- Hardware input capture for period measurement; adaptive sampling + exponential smoothing of data
+- Automatic day/night dimming driven by the vehicle's illumination signal
 - 12 V automotive input with load-dump protection
-
-## Why LED segments
-
-An earlier SSD1306 OLED prototype failed in direct sun against a light-colored
-car. The 7-segment LEDs run at roughly 100,000 cd/m² on-axis versus ~150 cd/m²
-for the OLED, which clears that failure case with margin. Teleprompter film on
-the windshield suppresses the double image.
 
 ---
 
@@ -44,37 +37,29 @@ the windshield suppresses the double image.
 - **Buck passives:** L = Bourns SRR1260-150M (15 µH, 27 mΩ, −40…+125 °C),
   R_FBT = 100 kΩ, R_FBB = 24.9 kΩ, C_VCC = 1 µF, C_BOOT = 0.1 µF.
 - **Split rails:** 5 V feeds the display common anodes; 3.3 V feeds the STM32
-  *and* the TLC5947 VCC. The TLC5947 must run at 3.3 V — its logic thresholds
-  scale with VCC, and at 5 V the STM32's 3.3 V SPI would fall below V_IH.
+  and the TLC5947 VCC.
 
 ### Current & thermal
 
-- IREF = 1.96 kΩ → 25 mA/segment. 2.46 kΩ drops it to a more conservative 20 mA.
+- IREF = 1.96 kΩ → 25 mA/segment.
 - TLC5947 dissipates ~1 W with all 24 channels on; PowerPAD must be soldered to
   a ground pour with a stitching via array (RθJA 32.8 °C/W → ~35 °C rise).
 - DSM7UA70105 derates 0.30 mA/°C above 25 °C — about 18 mA allowable at 65 °C
-  ambient. Grayscale PWM keeps average current under that in a hot car.
-
-### BOM consolidation
-
-Deliberately kept to three capacitor values (**0.1 µF, 2.2 µF, 22 µF**), one
-LED resistor value (**270 Ω**, blue on 5 V is the binding constraint at ~48 mcd),
-and reuse of 24.9 kΩ for the BOOT0 pulldown.
+  ambient. Hopefully doesn't melt in the summer heat of a car.
 
 ### Board
 
 - 4 layers: signal / GND plane / split power plane (5 V + 3.3 V) / signal
 - Displays and driver ICs on one side, everything else on the other
-- Tented (JLCPCB ink-plugged) vias board-wide; 0.3 mm thermal vias under the
-  PowerPAD, dedicated exposed test pads for bring-up
+- Tented (JLCPCB ink-plugged) vias board-wide
 - Status LEDs: 5 V rail (blue), 3.3 V rail (red), 2× GPIO (yellow, green)
-- BOOT0 button for UART reflash
+- RST button for MCU
 
 ---
 
 ## Firmware
 
-STM32CubeMX / HAL, FreeRTOS (CMSIS_V2), C.
+STM32CubeIDE / HAL, FreeRTOS (CMSIS_V2), C.
 
 ### Clock & peripherals
 
@@ -113,17 +98,15 @@ U7  ch 0–23   → LED1–LED3   speed, three digits
 U8  ch 24–47  → LED4–LED5   RPM in hundreds
 DIGIT_BASE = { 0, 8, 16, 24, 32 }
 ```
+### Physical Assembly
 
-## Status
+- 3D-printed case in black ASA, two halves that clamp shut on the PCB, which snaps into the bottom case using snap-hooks; designed in SolidWorks
+- Both case halves screw in together using SolidWorks mounting boss features
+- Teleprompter reflective film on windshield to remove double image from second reflection on outer side of windshield.
 
-Prototype. Schematic complete, board laid out, firmware ported from an earlier
-Artemis Nano + OLED revision.
 
-### Known issues / future revisions
+### Anticipated issues / future revisions
 
-- The 1 kΩ opto input resistor (RC1206FR-071KL, 0.25 W) sits at ~62 % of rating.
-  Split into two 499 Ω parts or move to an ERJ-P08.
-- Thermal vias fall outside JLCPCB's free plug process. Accept minor solder
-  loss on v1; use paid via-in-pad fill or dog-bone routing later.
-- Polarized sunglasses block the s-polarized windshield reflection. A
-  quarter-wave retarder film is the fix OEMs use.
+- Polarized sunglasses block the polarized windshield reflection.
+- Add proper collimation in the optical path using plano-convex lenses and fold mirrors
+- 
