@@ -94,7 +94,7 @@ DIGIT_BASE = { 0, 8, 16, 24, 32 }
 ```
 ### Physical Assembly
 
-- 3D-printed case in black ASA, two halves that clamp shut on the PCB, which snaps into the bottom case using snap-hooks; designed in SolidWorks
+- 3D-printed case in black PETG, two halves that clamp shut on the PCB, which snaps into the bottom case using snap-hooks; designed in SolidWorks
 - Both case halves screw in together using SolidWorks mounting boss features
 - Teleprompter reflective film on windshield to remove double image from second reflection on outer side of windshield.
 
@@ -103,4 +103,3 @@ DIGIT_BASE = { 0, 8, 16, 24, 32 }
 
 - Polarized sunglasses block the polarized windshield reflection.
 - Add proper collimation in the optical path using plano-convex lenses and fold mirrors
-- 
