@@ -6,8 +6,6 @@ enough to reflect off the windshield in daylight.
 
 Custom 4-layer PCB (95 × 35 mm) + STM32 firmware.
 
----
-
 ## Features
 
 - 3-digit speed (km/h), 2-digit RPM
@@ -15,8 +13,6 @@ Custom 4-layer PCB (95 × 35 mm) + STM32 firmware.
 - Hardware input capture for period measurement; adaptive sampling + exponential smoothing of data
 - Automatic day/night dimming driven by the vehicle's illumination signal
 - 12 V automotive input with load-dump protection
-
----
 
 ## Hardware
 
@@ -54,8 +50,6 @@ Custom 4-layer PCB (95 × 35 mm) + STM32 firmware.
 - Tented (JLCPCB ink-plugged) vias board-wide
 - Status LEDs: 5 V rail (blue), 3.3 V rail (red), 2× GPIO (yellow, green)
 - RST button for MCU
-
----
 
 ## Firmware
 
