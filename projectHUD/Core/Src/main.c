@@ -32,6 +32,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define MAX_UINT_32 0xFFFFFFFFF
+#define MOVING_AVG_ELEMENTS 10
+#define TACH_DETECTION_THRESHOLD 4 // corresponds to min engine RPM of 120
+#define SPEED_DETECTION_THRESHOLD 3.45 // corresponds to min speed of about 5 km/h
 
 /* USER CODE END PD */
 
@@ -66,7 +70,17 @@ const osMessageQueueAttr_t displayQueue_attributes = {
   .name = "displayQueue"
 };
 /* USER CODE BEGIN PV */
+volatile uint32_t tachCaptureValue = 0;
+volatile uint32_t prevTachCaptureValue = 0;
+volatile float tachFrequency = 0;
+volatile float tachReadings[MOVING_AVG_ELEMENTS]={0}; // Array to hold past + present tach values for moving avg
+volatile uint16_t engineRPMOut = 0;
 
+volatile uint32_t speedCaptureValue = 0;
+volatile uint32_t prevSpeedCaptureValue = 0;
+volatile float speedFrequency = 0;
+volatile float speedReadings[MOVING_AVG_ELEMENTS]={0};
+volatile uint16_t speedOut = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -84,7 +98,45 @@ void StartDisplayTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
+	// TO-DO: Change code so it calculates actual clock freq rather than using p clk
+	// TO-DO: Implement handling of when two pulses occur within a single clock cycle (cause it's almost certainly noise)
 
+	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
+		tachCaptureValue = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+		if (tachCaptureValue > prevTachCaptureValue){
+			tachFrequency = ((float) HAL_RCC_GetPCLK1Freq()) / (tachCaptureValue - prevTachCaptureValue);
+		} else {
+			tachFrequency = ((float) (HAL_RCC_GetPCLK1Freq()) / (tachCaptureValue + MAX_UINT_32 - prevTachCaptureValue));
+		}
+
+		// Shift elements of tachReadings array left by 1, then add new tachFrequency recording to the end
+		for (uint8_t elementCount = 0; elementCount < MOVING_AVG_ELEMENTS; elementCount++){
+			tachReadings[elementCount] = tachReadings[elementCount+1];
+		}
+		tachReadings[MOVING_AVG_ELEMENTS] = tachFrequency;
+
+		// Assign new captured timer value for last one
+		prevTachCaptureValue = tachCaptureValue;
+
+	}
+
+	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
+		speedCaptureValue = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
+		if (speedCaptureValue > prevSpeedCaptureValue){
+			speedFrequency = ((float) HAL_RCC_GetPCLK1Freq()) / (speedCaptureValue - prevSpeedCaptureValue);
+		} else {
+			speedFrequency = ((float) (HAL_RCC_GetPCLK1Freq()) / (speedCaptureValue + MAX_UINT_32 - prevSpeedCaptureValue));
+		}
+
+		for (uint8_t elementCount = 0; elementCount < MOVING_AVG_ELEMENTS; elementCount++){
+			speedReadings[elementCount] = speedReadings[elementCount+1];
+		}
+		speedReadings[MOVING_AVG_ELEMENTS] = speedFrequency;
+
+		prevSpeedCaptureValue = speedCaptureValue;
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -105,6 +157,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -120,7 +173,8 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1); // start input capture for tach input
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_2); // start input capture for speed input
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -444,9 +498,44 @@ static void MX_GPIO_Init(void)
 void StartInputTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+	const uint8_t PULSE_PER_REV = 2; // tachometer pulses per crankshaft revolution
+	const float PULSE_PER_KILO = 2482.215342; // calculated from 72158 pulses / 29.07 km
+
+
+
   /* Infinite loop */
   for(;;)
   {
+	uint16_t tachReadingSum = 0;
+	uint16_t speedReadingSum = 0;
+	uint16_t tachReadingsUnderMin = 0;
+	uint16_t speedReadingsUnderMin = 0;
+
+	// iterate thru recorded past/present tach and speed readings
+	for (uint8_t elementCount = 0; elementCount <= MOVING_AVG_ELEMENTS; elementCount++){
+		// sum all elements of the remembered past readings
+		tachReadingSum += tachReadings[elementCount];
+		speedReadingSum += speedReadings[elementCount];
+
+		// check how many of these individual readings are below the minimum detection threshold
+		if (tachReadings[elementCount] < TACH_DETECTION_THRESHOLD) tachReadingsUnderMin++;
+		if (speedReadings[elementCount] < SPEED_DETECTION_THRESHOLD) speedReadingsUnderMin++;
+
+
+	}
+
+	// For the RPM and speed calculations: check if ALL of the recorded tach/speed were under the threshold. If so, output 0, if not, calculate the speed.
+	engineRPMOut = (tachReadingsUnderMin == MOVING_AVG_ELEMENTS) ? 0 : (tachReadingSum / MOVING_AVG_ELEMENTS / PULSE_PER_REV * 60); // dividing by # of moving avg elements to get avg tach frequency; dividing by pulse per rev to get rev/s; multiply by 60 to get RPM
+	speedOut = (speedReadingsUnderMin == MOVING_AVG_ELEMENTS) ? 0 : (speedReadingSum / MOVING_AVG_ELEMENTS / PULSE_PER_KILO * 3600); // TO-DO: double-check typecasting rules?
+
+
+
+	/* NOTES */
+	/*
+	 * APB1 timer clock frequency (TIM2 freq): 100MHz
+	 *
+	 */
+
     osDelay(1);
   }
   /* USER CODE END 5 */
