@@ -32,10 +32,23 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MAX_UINT_32 0xFFFFFFFFF
 #define MOVING_AVG_ELEMENTS 10
 #define TACH_DETECTION_THRESHOLD 4 // corresponds to min engine RPM of 120
 #define SPEED_DETECTION_THRESHOLD 3.45 // corresponds to min speed of about 5 km/h
+
+// display constants
+#define TLC_CHANNELS 48 // two daisy-chained TLC5947s, 24 channels each
+#define TLC_BYTES 72 // 48 channels x 12 bits / 8
+#define BLANK_DIGIT 10 // index into segment table for a blank digit
+#define PWM_BRIGHT 0 // BLANK duty for 100% brightness (never blanked)
+#define PWM_DARK 50 // BLANK duty for 50% brightness (half of timer period 100)
+
+// frame passed from input task to display task, packed into one 32-bit queue item
+// bits 0-9: speed, bits 10-16: rpm hundreds, bit 17: night flag
+#define FRAME_PACK(spd, rpm, night) (((uint32_t)(night) << 17) | ((uint32_t)(rpm) << 10) | (spd))
+#define FRAME_SPEED(f) ((f) & 0x3FF)
+#define FRAME_RPM(f) (((f) >> 10) & 0x7F)
+#define FRAME_DARK(f) (((f) >> 17) & 1)
 
 /* USER CODE END PD */
 
@@ -73,14 +86,25 @@ const osMessageQueueAttr_t displayQueue_attributes = {
 volatile uint32_t tachCaptureValue = 0;
 volatile uint32_t prevTachCaptureValue = 0;
 volatile float tachFrequency = 0;
-volatile float tachReadings[MOVING_AVG_ELEMENTS]={0}; // Array to hold past + present tach values for moving avg
-volatile uint16_t engineRPMOut = 0;
+volatile float tachReadings[MOVING_AVG_ELEMENTS] = {0}; // array to hold past + present tach values for moving avg
+volatile uint8_t tachIdx = 0;
+
 
 volatile uint32_t speedCaptureValue = 0;
 volatile uint32_t prevSpeedCaptureValue = 0;
 volatile float speedFrequency = 0;
-volatile float speedReadings[MOVING_AVG_ELEMENTS]={0};
-volatile uint16_t speedOut = 0;
+volatile float speedReadings[MOVING_AVG_ELEMENTS] = {0};
+volatile uint8_t speedIdx = 0;
+
+// segment lookup table, bit order (dp)gfedcba, bit 0 = segment a
+static const uint8_t SEGMENT_TABLE[11] = {
+  0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F, 0x00
+};
+
+// first global TLC channel of each digit, from schematic:
+// U7 = channels 0-23 (speed), U8 = channels 24-47 (tach)
+// digit 0-2 = LED1-LED3 (speed hundreds, tens, ones), digit 3-4 = LED4-LED5 (rpm)
+static const uint8_t DIGIT_BASE[5] = {0, 8, 16, 24, 32};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -99,42 +123,31 @@ void StartDisplayTask(void *argument);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
-	// TO-DO: Change code so it calculates actual clock freq rather than using p clk
-	// TO-DO: Implement handling of when two pulses occur within a single clock cycle (cause it's almost certainly noise)
+
 
 	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
 		tachCaptureValue = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
-		if (tachCaptureValue > prevTachCaptureValue){
-			tachFrequency = ((float) HAL_RCC_GetPCLK1Freq()) / (tachCaptureValue - prevTachCaptureValue);
-		} else {
-			tachFrequency = ((float) (HAL_RCC_GetPCLK1Freq()) / (tachCaptureValue + MAX_UINT_32 - prevTachCaptureValue));
-		}
+		tachFrequency = (1000000.0f / (tachCaptureValue - prevTachCaptureValue));
 
-		// Shift elements of tachReadings array left by 1, then add new tachFrequency recording to the end
-		for (uint8_t elementCount = 0; elementCount < MOVING_AVG_ELEMENTS; elementCount++){
-			tachReadings[elementCount] = tachReadings[elementCount+1];
-		}
-		tachReadings[MOVING_AVG_ELEMENTS] = tachFrequency;
+	    // circular buffer LPF, replaces oldest value with most recent
+	    tachReadings[tachIdx] = tachFrequency;
+	    tachIdx = (tachIdx + 1) % MOVING_AVG_ELEMENTS;
 
 		// Assign new captured timer value for last one
-		prevTachCaptureValue = tachCaptureValue;
-
+	    prevTachCaptureValue = tachCaptureValue;
+	    HAL_GPIO_TogglePin(GPIOC, GREEN_LED_Pin); // debug blink
 	}
 
 	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
 		speedCaptureValue = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
-		if (speedCaptureValue > prevSpeedCaptureValue){
-			speedFrequency = ((float) HAL_RCC_GetPCLK1Freq()) / (speedCaptureValue - prevSpeedCaptureValue);
-		} else {
-			speedFrequency = ((float) (HAL_RCC_GetPCLK1Freq()) / (speedCaptureValue + MAX_UINT_32 - prevSpeedCaptureValue));
-		}
+		speedFrequency = (1000000.0f / (speedCaptureValue - prevSpeedCaptureValue));
 
-		for (uint8_t elementCount = 0; elementCount < MOVING_AVG_ELEMENTS; elementCount++){
-			speedReadings[elementCount] = speedReadings[elementCount+1];
-		}
-		speedReadings[MOVING_AVG_ELEMENTS] = speedFrequency;
+	    // circular buffer LPF, replaces oldest value with most recent
+	    speedReadings[speedIdx] = speedFrequency;
+	    speedIdx = (speedIdx + 1) % MOVING_AVG_ELEMENTS;
 
 		prevSpeedCaptureValue = speedCaptureValue;
+		HAL_GPIO_TogglePin(GPIOC, YELLOW_LED_Pin); // debug blink
 	}
 }
 /* USER CODE END 0 */
@@ -175,6 +188,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1); // start input capture for tach input
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_2); // start input capture for speed input
+
+  // display outputs stay blanked (BLANK pulled high by PWM idle state) until first frame is latched;
+  // displayTask sends the first buffer before brightness matters
+  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, PWM_BRIGHT);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -501,42 +519,68 @@ void StartInputTask(void *argument)
 	const uint8_t PULSE_PER_REV = 2; // tachometer pulses per crankshaft revolution
 	const float PULSE_PER_KILO = 2482.215342; // calculated from 72158 pulses / 29.07 km
 
+	uint16_t engineRPMOut = 0;
+	uint16_t speedOut = 0;
 
 
   /* Infinite loop */
   for(;;)
   {
-	uint16_t tachReadingSum = 0;
-	uint16_t speedReadingSum = 0;
+	uint32_t frame = 0;
+	float tachSum = 0;
+	float speedSum = 0;
 	uint16_t tachReadingsUnderMin = 0;
 	uint16_t speedReadingsUnderMin = 0;
+	uint8_t isDark = 0;
 
 	// iterate thru recorded past/present tach and speed readings
-	for (uint8_t elementCount = 0; elementCount <= MOVING_AVG_ELEMENTS; elementCount++){
+	for (uint8_t elementCount = 0; elementCount < MOVING_AVG_ELEMENTS; elementCount++){
 		// sum all elements of the remembered past readings
-		tachReadingSum += tachReadings[elementCount];
-		speedReadingSum += speedReadings[elementCount];
+		tachSum += tachReadings[elementCount];
+		speedSum += speedReadings[elementCount];
 
 		// check how many of these individual readings are below the minimum detection threshold
 		if (tachReadings[elementCount] < TACH_DETECTION_THRESHOLD) tachReadingsUnderMin++;
 		if (speedReadings[elementCount] < SPEED_DETECTION_THRESHOLD) speedReadingsUnderMin++;
-
-
 	}
 
+	// check if stopped for > 1s since last pulse, trigger flag if so
+	uint32_t currentTime = __HAL_TIM_GET_COUNTER(&htim2);
+	uint8_t tachTimedOut = (currentTime - prevTachCaptureValue) > 1000000UL;   // >1s since last pulse
+	uint8_t speedTimedOut = (currentTime - prevSpeedCaptureValue) > 1000000UL;
+
 	// For the RPM and speed calculations: check if ALL of the recorded tach/speed were under the threshold. If so, output 0, if not, calculate the speed.
-	engineRPMOut = (tachReadingsUnderMin == MOVING_AVG_ELEMENTS) ? 0 : (tachReadingSum / MOVING_AVG_ELEMENTS / PULSE_PER_REV * 60); // dividing by # of moving avg elements to get avg tach frequency; dividing by pulse per rev to get rev/s; multiply by 60 to get RPM
-	speedOut = (speedReadingsUnderMin == MOVING_AVG_ELEMENTS) ? 0 : (speedReadingSum / MOVING_AVG_ELEMENTS / PULSE_PER_KILO * 3600); // TO-DO: double-check typecasting rules?
 
+	// RPM Calculation:
+	// 1. dividing sum by # of moving avg elements to get avg tachometer frequency
+	// 2. dividing by pulse per rev to get rev/s
+	// 3. multiply by 60 to get RPM
+	// 4. divide by 100 so it can be shown on two 7-seg displays (i.e. 3500RPM shows at 35)
+	// if stopped for a long period (i.e. no pulses for a while) OR if last 10 values were under minimum speed, set to 0
+	engineRPMOut = (tachTimedOut || tachReadingsUnderMin == MOVING_AVG_ELEMENTS) ? 0 : (uint16_t)((tachSum / MOVING_AVG_ELEMENTS) / PULSE_PER_REV * 60.0f / 100.0f);
 
+	// Speed Calculation:
+	// 1. dividing sum by # of moving avg elements to get avg speed sensor frequency
+	// 2. dividing by  PULSE_PER_KILO to get kilometers per second
+	// 3. multiply by 3600 to get kilometers per hour
+	// if stopped for a long period (i.e. no pulses for a while) OR if last 10 values were under minimum speed, set to 0
+	speedOut = (speedTimedOut || speedReadingsUnderMin == MOVING_AVG_ELEMENTS) ? 0 : (uint16_t)((speedSum / MOVING_AVG_ELEMENTS) / PULSE_PER_KILO * 3600.0f);
+	// clamp max calculations in case any random noise causes dead values
+	if (speedOut > 999) speedOut = 999;
+	if (engineRPMOut > 99) engineRPMOut = 99;
+
+	// headlight input is LOW when headlights are on -> dim to 50%
+	isDark = (HAL_GPIO_ReadPin(LIGHT_GPIO_Port, LIGHT_Pin) == GPIO_PIN_RESET);
+
+	frame = FRAME_PACK(speedOut, engineRPMOut, isDark);
+	osMessageQueuePut(displayQueueHandle, &frame, 0, 0); // drop frame if queue full, never block
 
 	/* NOTES */
 	/*
 	 * APB1 timer clock frequency (TIM2 freq): 100MHz
 	 *
 	 */
-
-    osDelay(1);
+    osDelay(50);
   }
   /* USER CODE END 5 */
 }
@@ -551,10 +595,60 @@ void StartInputTask(void *argument)
 void StartDisplayTask(void *argument)
 {
   /* USER CODE BEGIN StartDisplayTask */
+	uint32_t frame;
+	uint16_t speed, rpm;
+	uint8_t segState[TLC_CHANNELS]; // on/off state of every TLC output
+	uint8_t digits[5];
+	uint8_t tlcBuffer[TLC_BYTES];
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	if (osMessageQueueGet(displayQueueHandle, &frame, NULL, osWaitForever) != osOK) {
+		continue;
+	}
+
+	speed = FRAME_SPEED(frame);
+	rpm = FRAME_RPM(frame);
+
+	// brightness in two levels via BLANK duty cycle at 25kHz, no visible flicker
+	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, (FRAME_DARK(frame) ? PWM_DARK : PWM_BRIGHT));
+
+	// pick the number for each digit, with leading zero blanking
+	digits[0] = (speed >= 100) ? (speed / 100) : BLANK_DIGIT;
+	digits[1] = (speed >= 10) ? ((speed / 10) % 10) : BLANK_DIGIT;
+	digits[2] = speed % 10;
+	digits[3] = (rpm >= 10) ? rpm / 10 : BLANK_DIGIT;
+	digits[4] = rpm % 10;
+
+	// look up segments and mark each TLC channel on or off
+	for (int8_t channel = 0; channel < TLC_CHANNELS; channel++) {
+		segState[channel] = 0; // clears unused + DP channels
+	}
+
+	for (int8_t digitIndex = 0; digitIndex < 5; digitIndex++) {
+		uint8_t segments = SEGMENT_TABLE[digits[digitIndex]];
+		for (int8_t segIndex = 0; segIndex < 7; segIndex++) {
+		  segState[DIGIT_BASE[digitIndex] + segIndex] = (segments >> segIndex) & 1;
+		}
+	}
+
+	// pack into the shift buffer: 12 bits per channel, channel 47 shifted out first
+	// so it travels through U7 into U8, each channel pair -> 3 bytes
+	for (int8_t pairStart = 0; pairStart < TLC_CHANNELS; pairStart += 2) {
+		uint8_t firstChannelOn = segState[TLC_CHANNELS - 1 - pairStart]; // first channel of the pair, upper 12 bits
+		uint8_t secondChannelOn = segState[TLC_CHANNELS - 2 - pairStart]; // second channel of the pair, lower 12 bits
+		tlcBuffer[(pairStart / 2) * 3] = firstChannelOn ? 0xFF : 0x00;
+		tlcBuffer[(pairStart / 2) * 3 + 1] = (firstChannelOn ? 0xF0 : 0x00) | (secondChannelOn ? 0x0F : 0x00);
+		tlcBuffer[(pairStart / 2) * 3 + 2] = secondChannelOn ? 0xFF : 0x00;
+	}
+
+	// shift out and latch
+	HAL_SPI_Transmit(&hspi2, tlcBuffer, TLC_BYTES, HAL_MAX_DELAY);
+	HAL_GPIO_WritePin(LATCH_GPIO_Port, LATCH_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(LATCH_GPIO_Port, LATCH_Pin, GPIO_PIN_RESET);
+
+	// no need for osDelay as message is already blocked
+//    osDelay(1);
   }
   /* USER CODE END StartDisplayTask */
 }

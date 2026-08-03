@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item key="hasShownOverlayPopupBefore" value="true"/>
+	<item key="replaceBarOpen" value="true"/>
+	<list key="searchhistory">
+		<item value="osDelay(1)"/>
+		<item value="TO-DO"/>
+		<item value="ICFilter = 0x0F"/>
+		<item value="uint8_t tlcBuffer[TLC_BYTES]"/>
+		<item value="HIGH "/>
+		<item value="isDark"/>
+		<item value="tachReadingsUnderMin "/>
+		<item value="tachFrequency"/>
+		<item value="LATCH_GPIO_"/>
+		<item value="LATCH_GPIO_Port"/>
+		<item value="LATCH_GPIO_PORT"/>
+		<item value="LATCH_PIN"/>
+		<item value="LATCH_"/>
+	</list>
+	<list key="replacehistory">
+		<item value="LATCH_GPIO_Port"/>
+		<item value="LATCH_Pin"/>
+	</list>
+</section>

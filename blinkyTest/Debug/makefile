@@ -64,8 +64,8 @@ all: main-build
 main-build: blinkyTest.elf secondary-outputs
 
 # Tool invocations
-blinkyTest.elf blinkyTest.map: $(OBJS) $(USER_OBJS) C:\Users\ktlxy\Documents\GitHub\projectHUD\blinkyTest\STM32F411RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "blinkyTest.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\ktlxy\Documents\GitHub\projectHUD\blinkyTest\STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="blinkyTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+blinkyTest.elf blinkyTest.map: $(OBJS) $(USER_OBJS) C:\Github\projectHUD\blinkyTest\STM32F411RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "blinkyTest.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Github\projectHUD\blinkyTest\STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="blinkyTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
