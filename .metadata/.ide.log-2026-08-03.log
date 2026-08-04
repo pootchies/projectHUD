@@ -1,0 +1,89 @@
+2026-08-04 00:49:45,133 [INFO] Gpio:278 - dependency for GPIO [SPI2, SYS, TIM2, TIM3]
+2026-08-04 00:50:00,677 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 385725144 Bytes (505413632)
+2026-08-04 00:50:00,819 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 415085272 Bytes (505413632)
+2026-08-04 00:50:01,202 [INFO] UtilMem:75 - End SaveConfig() Used Memory: 448639704 Bytes (505413632)
+2026-08-04 00:50:01,811 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: SPI
+2026-08-04 00:50:01,812 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: NVIC
+2026-08-04 00:50:01,812 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: FREERTOS
+2026-08-04 00:50:01,812 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: TIM1_8
+2026-08-04 00:50:01,812 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: TIM1_8
+2026-08-04 00:50:01,812 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: SYS
+2026-08-04 00:50:01,812 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: GPIO
+2026-08-04 00:50:01,812 [INFO] BlockDiagram:2775 - set Specific Code input for plugin: RCC
+2026-08-04 00:50:01,813 [INFO] CodeGenerator:892 - code generatio: config db path: C:\ST\STM32CubeIDE_1.19.0\STM32CubeIDE\plugins\com.st.stm32cube.common.mx_6.15.0.202507011659\\db\
+2026-08-04 00:50:01,938 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\license.tmp_save
+2026-08-04 00:50:02,226 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\license.tmp
+2026-08-04 00:50:02,285 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\gpio.tmp_save
+2026-08-04 00:50:02,407 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\gpio.tmp
+2026-08-04 00:50:02,573 [INFO] Middleware:1452 - No code input for Bsp Dependency
+2026-08-04 00:50:02,579 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_inc.tmp_save
+2026-08-04 00:50:02,633 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_inc.tmp
+2026-08-04 00:50:02,638 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_kernelInit.tmp_save
+2026-08-04 00:50:02,704 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_kernelInit.tmp
+2026-08-04 00:50:02,707 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_kernelStart.tmp_save
+2026-08-04 00:50:02,754 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_kernelStart.tmp
+2026-08-04 00:50:02,759 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_typedefs.tmp_save
+2026-08-04 00:50:02,808 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_typedefs.tmp
+2026-08-04 00:50:02,813 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_vars.tmp_save
+2026-08-04 00:50:02,861 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_vars.tmp
+2026-08-04 00:50:02,865 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_pfp.tmp_save
+2026-08-04 00:50:02,908 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_pfp.tmp
+2026-08-04 00:50:02,912 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_obj_creat.tmp_save
+2026-08-04 00:50:02,960 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_obj_creat.tmp
+2026-08-04 00:50:02,965 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_default_thread.tmp_save
+2026-08-04 00:50:03,007 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_default_thread.tmp
+2026-08-04 00:50:03,013 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_threads.tmp_save
+2026-08-04 00:50:03,052 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_threads.tmp
+2026-08-04 00:50:03,065 [INFO] Middleware:1452 - No code input for Bsp Dependency
+2026-08-04 00:50:03,071 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_inc.tmp_save
+2026-08-04 00:50:03,110 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_inc.tmp
+2026-08-04 00:50:03,114 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_kernelInit.tmp_save
+2026-08-04 00:50:03,165 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_kernelInit.tmp
+2026-08-04 00:50:03,170 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_kernelStart.tmp_save
+2026-08-04 00:50:03,216 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_kernelStart.tmp
+2026-08-04 00:50:03,221 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_typedefs.tmp_save
+2026-08-04 00:50:03,265 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_typedefs.tmp
+2026-08-04 00:50:03,269 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_vars.tmp_save
+2026-08-04 00:50:03,315 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_vars.tmp
+2026-08-04 00:50:03,319 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_pfp.tmp_save
+2026-08-04 00:50:03,353 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_pfp.tmp
+2026-08-04 00:50:03,357 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_obj_creat.tmp_save
+2026-08-04 00:50:03,389 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_obj_creat.tmp
+2026-08-04 00:50:03,393 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_default_thread.tmp_save
+2026-08-04 00:50:03,425 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_default_thread.tmp
+2026-08-04 00:50:03,428 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_threads.tmp_save
+2026-08-04 00:50:03,460 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\rtos_threads.tmp
+2026-08-04 00:50:03,466 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\Core\Inc\FreeRTOSConfig.h_save
+2026-08-04 00:50:03,514 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\Core\Inc\FreeRTOSConfig.h
+2026-08-04 00:50:03,520 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\Core\Src\freertos.c_save
+2026-08-04 00:50:03,570 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\Core\Src\freertos.c
+2026-08-04 00:50:03,582 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\Core\Src\stm32f4xx_it.c_save
+2026-08-04 00:50:03,640 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\Core\Src\stm32f4xx_it.c
+2026-08-04 00:50:03,645 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\Core\Inc\stm32f4xx_it.h_save
+2026-08-04 00:50:03,680 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\Core\Inc\stm32f4xx_it.h
+2026-08-04 00:50:03,693 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\Core\Src\stm32f4xx_hal_msp.c_save
+2026-08-04 00:50:03,770 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\Core\Src\stm32f4xx_hal_msp.c
+2026-08-04 00:50:03,775 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\MXTmpFiles\system.tmp_save
+2026-08-04 00:50:03,807 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\MXTmpFiles\system.tmp
+2026-08-04 00:50:03,810 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\Core\Src\stm32f4xx_hal_timebase_tim.c_save
+2026-08-04 00:50:03,847 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\Core\Src\stm32f4xx_hal_timebase_tim.c
+2026-08-04 00:50:03,856 [INFO] CodeEngine:321 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\Core\Inc\stm32f4xx_hal_conf.h_save
+2026-08-04 00:50:03,893 [INFO] CodeEngine:345 - Generated code: C:\Github\projectHUD\projectHUD\Core\Inc\stm32f4xx_hal_conf.h
+2026-08-04 00:50:03,915 [INFO] ApiDbMcu:532 - Load IP Config File for SPI2
+2026-08-04 00:50:03,924 [INFO] ApiDbMcu:532 - Load IP Config File for TIM2
+2026-08-04 00:50:03,932 [INFO] ApiDbMcu:532 - Load IP Config File for TIM3
+2026-08-04 00:50:03,935 [INFO] ApiDbMcu:532 - Load IP Config File for RCC
+2026-08-04 00:50:03,938 [WARN] IPConfigManager:3811 - IP not found : TIM
+2026-08-04 00:50:03,941 [WARN] CodeGenerator:4259 - IP not found : null
+2026-08-04 00:50:03,947 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\Core\Inc\main.h_save
+2026-08-04 00:50:04,003 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\Core\Inc\main.h
+2026-08-04 00:50:04,009 [INFO] CodeEngine:265 - oldGeneratedFile, C:\Github\projectHUD\projectHUD\Core\Src\main.c_save
+2026-08-04 00:50:04,125 [INFO] CodeEngine:289 - Generated code: C:\Github\projectHUD\projectHUD\Core\Src\main.c
+2026-08-04 00:50:04,464 [INFO] ProjectBuilder:3606 - Time for Copy HAL[1] : 178mS.
+2026-08-04 00:50:04,472 [INFO] ProjectBuilder:5216 - Project Generator version: 4.7.0-B52
+2026-08-04 00:50:04,517 [INFO] ConfigFileManager:1595 - The Die is : DIE431
+2026-08-04 00:50:04,521 [INFO] ApiDbMcu:532 - Load IP Config File for FATFS
+2026-08-04 00:50:04,523 [INFO] ApiDbMcu:532 - Load IP Config File for LIBJPEG
+2026-08-04 00:50:04,527 [INFO] ApiDbMcu:532 - Load IP Config File for MBEDTLS
+2026-08-04 00:50:04,532 [INFO] ApiDbMcu:532 - Load IP Config File for USB_DEVICE
+2026-08-04 00:50:04,535 [INFO] ApiDbMcu:532 - Load IP Config File for USB_HOST

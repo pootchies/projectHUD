@@ -3,21 +3,29 @@
 	<item key="hasShownOverlayPopupBefore" value="true"/>
 	<item key="replaceBarOpen" value="true"/>
 	<list key="searchhistory">
-		<item value="osDelay(1)"/>
-		<item value="TO-DO"/>
-		<item value="ICFilter = 0x0F"/>
-		<item value="uint8_t tlcBuffer[TLC_BYTES]"/>
-		<item value="HIGH "/>
-		<item value="isDark"/>
-		<item value="tachReadingsUnderMin "/>
-		<item value="tachFrequency"/>
-		<item value="LATCH_GPIO_"/>
-		<item value="LATCH_GPIO_Port"/>
-		<item value="LATCH_GPIO_PORT"/>
-		<item value="LATCH_PIN"/>
-		<item value="LATCH_"/>
+		<item value="HAL_TIM_PWM_Start"/>
+		<item value="main()"/>
+		<item value="MX_TIM3_Init"/>
+		<item value="SPEED_MIN_PERIOD"/>
+		<item value="0x71"/>
+		<item value="osThreadNew"/>
+		<item value="tachCaptureValue"/>
+		<item value="windowFromPeriod"/>
+		<item value="TACH"/>
+		<item value="Tach"/>
+		<item value="tach"/>
+		<item value="tachReadingsOverMax"/>
+		<item value="PERIOD_DEBOUNCE"/>
+		<item value="(float)"/>
+		<item value="outputSpeed"/>
 	</list>
 	<list key="replacehistory">
+		<item value="getWindowFromPeriod"/>
+		<item value="SPEED"/>
+		<item value="Speed"/>
+		<item value="speed"/>
+		<item value="speedOutput"/>
+		<item value="NUM_DIGITS"/>
 		<item value="LATCH_GPIO_Port"/>
 		<item value="LATCH_Pin"/>
 	</list>
