@@ -3,6 +3,10 @@
 	<item key="hasShownOverlayPopupBefore" value="true"/>
 	<item key="replaceBarOpen" value="true"/>
 	<list key="searchhistory">
+		<item value="display"/>
+		<item value="PERIOD_TIMEOUT"/>
+		<item value="TACH_MAX_PERIOD"/>
+		<item value="PWM_DARK"/>
 		<item value="HAL_TIM_PWM_Start"/>
 		<item value="main()"/>
 		<item value="MX_TIM3_Init"/>
@@ -14,10 +18,6 @@
 		<item value="TACH"/>
 		<item value="Tach"/>
 		<item value="tach"/>
-		<item value="tachReadingsOverMax"/>
-		<item value="PERIOD_DEBOUNCE"/>
-		<item value="(float)"/>
-		<item value="outputSpeed"/>
 	</list>
 	<list key="replacehistory">
 		<item value="getWindowFromPeriod"/>

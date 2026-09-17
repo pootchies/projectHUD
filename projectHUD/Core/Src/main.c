@@ -39,25 +39,24 @@
 #define PERIOD_TIMEOUT 1000000UL // maximum period of 1 second between pulses
 #define PERIOD_DEBOUNCE 100000UL // debounce amount for deadband; 10% of timeout period
 #define TACH_MAX_PERIOD 100000UL // min 300 RPM
-#define SPEED_MAX_PERIOD 483439UL // min 3 km/h speed
-#define MICROS_PER_SEC 1000000UL
-#define SEC_PER_MIN 60
-#define SEC_PER_HOUR 3600
-#define SPEED_HYST 0.6f // speed deadband: output value is sticky within ±0.6 km/h
+#define SPEED_MAX_PERIOD 725159UL // min 2 km/h speed
+#define SPEED_HYST 0.8f // speed deadband: output value is sticky within ±0.7 km/h
 #define TACH_HYST 60 // tach deadband: output value is sticky within ±60 RPM
-// variable averaging window size
 #define UPPER_PERIOD 50000UL // pulse periods above this -> 1 sample (fast response)
 #define LOWER_PERIOD 10000UL // pulse periods below this -> 10 samples (heavy filtering)
 
 // display constants
-#define DISPLAY_ORIENTATION 0 // 0 = normal display orientation, 1 = flipped
+#define DISPLAY_ORIENTATION 1 // 0 = normal display orientation, 1 = flipped
 #define TLC_CHANNELS 48 // two daisy-chained TLC5947s, 24 channels each
 #define TLC_BYTES 72 // 48 channels x 12 bits / 8
 #define BLANK_DIGIT 10 // index into segment table for a blank digit
-#define PWM_BRIGHT 95 // BLANK duty for high brightness (don't use 100% to force grayscale controller to be always running: fixes flicker at 100%)
-#define PWM_DARK 95 // BLANK duty for reduced brightness (portion of timer period 100)
+#define PWM_BRIGHT 80 // BLANK duty for high brightness
+#define PWM_DARK 4.5 // BLANK duty for reduced brightness
 #define NUM_SEGMENTS 7 // 7 segments per display
 #define NUM_DIGITS 5 // 3 for speed, 2 for tach
+#define PWM_PERIOD 4000 // 25 KHz PWM
+
+#define PWM_DUTY(pct) ((uint32_t)(pct) * (PWM_PERIOD / 100)) // convert percent to timer period
 
 // frame passed from input task to display task, packed into one 32-bit queue item
 // bits 0-9: speed, bits 10-16: rpm hundreds, bit 17: night flag
@@ -207,12 +206,6 @@ int main(void)
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_SPI2_Init();
-  MX_TIM2_Init();
-  MX_TIM3_Init();
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
@@ -450,9 +443,9 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 99;
+  htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 99;
+  htim3.Init.Period = 3999;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -552,7 +545,12 @@ void StartInputTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
 	const uint8_t PULSE_PER_REV = 2; // tachometer pulses per crankshaft revolution
-	const float PULSE_PER_KILO = 2482.215342; // calculated from 72158 pulses / 29.07 km
+	const float PULSE_PER_KILO = 2482.215342f; // calculated from 72158 pulses / 29.07 km
+	const uint16_t RPM_LIMIT = 6500; // 6500 RPM engine redline
+	const float SPEED_LIMIT = 200.0f; // 200 km/h max speed on this display
+	const uint32_t MICROS_PER_SEC = 1000000;
+	const uint8_t SEC_PER_MIN = 60;
+	const uint16_t SEC_PER_HOUR = 3600;
 
 	uint32_t tachOutput = 0;
 	uint32_t speedOutput = 0;
@@ -631,27 +629,29 @@ void StartInputTask(void *argument)
 	// speed calculation: (µs/hour) / (µs/pulse × pulses/km) = km/h
 	float speedRaw = (float)(SEC_PER_HOUR * MICROS_PER_SEC) / ((float)speedAverage * PULSE_PER_KILO);
 
+	// if flagged as zero or if average is more than max period, set output to 0
 	if (isTachZero || (tachAverage > TACH_MAX_PERIOD)) {
 		tachOutput = 0;
-	} else if (tachRaw < 6500) {
+	} else if (tachRaw < RPM_LIMIT) { // if normal operating condition:
 		// display hysteresis: displayed value only re-rounds once raw value exits TACH_HYST threshold
 		uint32_t tachDiff = labs((int32_t)tachRaw - (int32_t)tachOutput);
 		if (tachDiff >= TACH_HYST) {
-			tachOutput = ((tachRaw + 50) / 100) * 100; // round to nearest hundred
+			tachOutput = ((tachRaw + 50) / 100) * 100; // round to nearest hundred; +50 ensures nearest hundred rather than floor
 		}
-	} else {
-		tachOutput = 6500;
+	} else { // clamp at max value if beyond it
+		tachOutput = RPM_LIMIT;
 	}
+	// if flagged as zero or if average is more than max period, set output to 0
 	if (isSpeedZero || (speedAverage > SPEED_MAX_PERIOD)) {
 		speedOutput = 0;
-	} else if (speedRaw < 200.0f) {
+	} else if (speedRaw < SPEED_LIMIT) {
 		// display hysteresis: displayed value only re-rounds once raw value exits SPEED_HYST threshold
 		float speedDiff = fabsf(speedRaw - (float)speedOutput);
 		if (speedDiff >= SPEED_HYST) {
-			speedOutput = (uint32_t)(speedRaw + 0.5f);
+			speedOutput = (uint32_t)(speedRaw + 0.5f); // +0.5f ensures nearest ones digit rather than floor
 		}
-	} else {
-		speedOutput = 200;
+	} else { // clamp at max value if beyond it
+		speedOutput = (uint32_t)SPEED_LIMIT;
 	}
 
 	// headlight input is low when headlights are on -> dim LEDs by triggering isDark flag
@@ -694,7 +694,7 @@ void StartDisplayTask(void *argument)
 	speed = FRAME_SPEED(frame);
 	rpm = FRAME_RPM(frame);
 	// extract isDark flag from frame. output PWM to timer ch.4 which is connected to BLANK. if isDark flag is true, output PWM_DARK, and vice versa
-	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, (FRAME_DARK(frame) ? PWM_DARK : PWM_BRIGHT));
+	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, FRAME_DARK(frame) ? PWM_DUTY(100 - PWM_DARK) : PWM_DUTY(100 - PWM_BRIGHT));
 
 	// process each number for each digit with leading zero blanking
 	digits[0] = (speed >= 100) ? (speed / 100) : BLANK_DIGIT;
