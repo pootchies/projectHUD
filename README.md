@@ -1,4 +1,4 @@
-# Automotive HUD — Speed & Tachometer Output on Dashbaord
+# Automotive HUD — Speed & Tachometer Output on Dashboard
 
 A second-gen windshield heads-up display for a vehicle. Reads wheel-speed and tachometer
 pulses off the vehicle harness and drives five 7-segment LED displays bright
