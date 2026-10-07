@@ -1,4 +1,4 @@
-# Automotive HUD — Speed & Tach
+# Automotive HUD — Speed & Tachometer Output on Dashbaord
 
 A second-gen windshield heads-up display for a vehicle. Reads wheel-speed and tachometer
 pulses off the vehicle harness and drives five 7-segment LED displays bright
@@ -27,22 +27,6 @@ Custom 4-layer PCB (95 × 35 mm) + STM32 firmware.
 | LDO (5 V → 3.3 V) | AP2112K-class series LDO |
 | Optoisolators | TLP291 (headlight), LTV-827S (speed / tach) |
 
-### Power
-
-- **12 V in:** SMCJ36A TVS, EN tied to VIN. Input caps rated 50 V for load dump.
-- **Buck passives:** L = Bourns SRR1260-150M (15 µH, 27 mΩ, −40…+125 °C),
-  R_FBT = 100 kΩ, R_FBB = 24.9 kΩ, C_VCC = 1 µF, C_BOOT = 0.1 µF.
-- **Split rails:** 5 V feeds the display common anodes; 3.3 V feeds the STM32
-  and the TLC5947 VCC.
-
-### Current & thermal
-
-- IREF = 1.96 kΩ → 25 mA/segment.
-- TLC5947 dissipates ~1 W with all 24 channels on; PowerPAD must be soldered to
-  a ground pour with a stitching via array (RθJA 32.8 °C/W → ~35 °C rise).
-- DSM7UA70105 derates 0.30 mA/°C above 25 °C — about 18 mA allowable at 65 °C
-  ambient. Hopefully doesn't melt in the summer heat of a car.
-
 ### Board
 
 - 4 layers: signal / GND plane / split power plane (5 V + 3.3 V) / signal
@@ -66,7 +50,7 @@ STM32CubeIDE / HAL, FreeRTOS (CMSIS_V2), C.
 | TIM11 | HAL timebase |
 | SWO | PB3 |
 
-### Pin map
+### Pin mappings
 
 | Signal | Pin |
 |---|---|
@@ -94,12 +78,6 @@ DIGIT_BASE = { 0, 8, 16, 24, 32 }
 ```
 ### Physical Assembly
 
-- 3D-printed case in black PETG, two halves that clamp shut on the PCB, which snaps into the bottom case using snap-hooks; designed in SolidWorks
-- Both case halves screw in together using SolidWorks mounting boss features
-- Teleprompter reflective film on windshield to remove double image from second reflection on outer side of windshield.
-
-
-### Anticipated issues / future revisions
-
-- Polarized sunglasses block the polarized windshield reflection.
-- Add proper collimation in the optical path using plano-convex lenses and fold mirrors
+- 3D-printed case in black PLA, two halves that clamp shut on the PCB, which snaps into the bottom case using snap-hooks; designed in SolidWorks
+- Both case halves screw in together using M3 fasteners.
+- Teleprompter reflective film on windshield to remove double image from second reflection on outer side of windshield and unpolarizes light.
